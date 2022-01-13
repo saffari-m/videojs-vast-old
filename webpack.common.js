@@ -9,7 +9,7 @@ const videoPlayerConfig = {
     chunkFilename: "[name].bundle.js",
   },
 
-  target: "web",
+  // target: "web",
 
   module: {
     rules: [
@@ -27,8 +27,13 @@ const standalonePluginConfig = Object.assign({}, videoPlayerConfig, {
   entry: {
     "videojs-vast": ["./src/vast-plugin.js", "./src/vast-player.css"],
   },
+  output: {
+    filename: "videojs-vast.cjs.js",
+    path: `${__dirname}/dist`,
+    library: { type: "commonjs" },
+  },
   externals: {
-    "video.js": "videojs",
+    "video.js": "video.js",
     "videojs-contrib-ads": "videojs-contrib-ads",
   },
   module: {
