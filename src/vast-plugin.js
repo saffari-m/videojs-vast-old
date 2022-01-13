@@ -1,8 +1,9 @@
-import videojs from 'video.js'
-import { VASTClient, VASTParser, VASTTracker } from 'vast-client'
-import handleVPAID from './vpaid-handler'
+import videojs from "video.js";
+import "videojs-contrib-ads";
+import { VASTClient, VASTParser, VASTTracker } from "vast-client";
+import handleVPAID from "./vpaid-handler";
 
-const Plugin = videojs.getPlugin('plugin');
+const Plugin = videojs.getPlugin("plugin");
 
 /**
  * Create Source Objects
@@ -11,7 +12,10 @@ const Plugin = videojs.getPlugin('plugin');
  * @return {Array} Array of source objects
  */
 function createSourceObjects(mediaFiles) {
-  return mediaFiles.map(mediaFile => ({type: mediaFile.mimeType, src: mediaFile.fileURL}));
+  return mediaFiles.map((mediaFile) => ({
+    type: mediaFile.mimeType,
+    src: mediaFile.fileURL,
+  }));
 }
 
 /**
@@ -23,7 +27,7 @@ function createSourceObjects(mediaFiles) {
 function hasVPAID(vastCreative) {
   const mediaFiles = vastCreative.mediaFiles;
   for (let i = 0; i < mediaFiles.length; i++) {
-    if (mediaFiles[i].apiFramework && mediaFiles[i].apiFramework === 'VPAID') {
+    if (mediaFiles[i].apiFramework && mediaFiles[i].apiFramework === "VPAID") {
       return true;
     }
   }
@@ -41,16 +45,15 @@ const defaultOptions = {
   skip: 0,
   vpaid: {
     containerId: undefined,
-    containerClass: 'vjs-vpaid-container',
-    videoInstance: 'none'
-  }
+    containerClass: "vjs-vpaid-container",
+    videoInstance: "none",
+  },
 };
 
 /**
  * VastPlugin
  */
 class VastPlugin extends Plugin {
-
   /**
    * Constructor
    *
@@ -61,8 +64,8 @@ class VastPlugin extends Plugin {
     super(player);
 
     // Could be initialized already by user
-    if (typeof player.ads === 'function') {
-      player.ads({debug: false});
+    if (typeof player.ads === "function") {
+      player.ads({ debug: false });
     }
 
     options = videojs.mergeOptions(defaultOptions, options || {});
@@ -75,26 +78,25 @@ class VastPlugin extends Plugin {
     this.domElements = {};
     this.vastCreative = null;
 
-    player.on('contentchanged', () => {
+    player.on("contentchanged", () => {
       // eslint-disable-next-line no-console
-      console.log('Content changed');
+      console.log("Content changed");
     });
 
-    player.on('readyforpreroll', () => {
-      console.log('Trigger read for preroll');
+    player.on("readyforpreroll", () => {
+      console.log("Trigger read for preroll");
 
       if (hasVPAID(this.vastCreative)) {
-        handleVPAID(player, this.vastCreative, options)
-      }
-      else {
+        handleVPAID(player, this.vastCreative, options);
+      } else {
         this._doPreroll(this.vastCreative);
       }
     });
 
     this._getVastContent()
       .then((res) => this._handleVast(res))
-      .catch(err => {
-        this.player.trigger('adscanceled');
+      .catch((err) => {
+        this.player.trigger("adscanceled");
         // eslint-disable-next-line no-console
         console.log(`Ad cancelled: ${err.message}`);
       });
@@ -102,14 +104,14 @@ class VastPlugin extends Plugin {
 
   _handleVast(vast) {
     if (!vast.ads || vast.ads.length === 0) {
-      this.player.trigger('adscanceled');
+      this.player.trigger("adscanceled");
       return;
     }
 
-    const linearFn = creative => creative.type === 'linear';
-    const companionFn = creative => creative.type === 'companion';
+    const linearFn = (creative) => creative.type === "linear";
+    const companionFn = (creative) => creative.type === "companion";
 
-    const adWithLinear = vast.ads.find(ad => ad.creatives.some(linearFn));
+    const adWithLinear = vast.ads.find((ad) => ad.creatives.some(linearFn));
 
     const linearCreative = adWithLinear.creatives.find(linearFn);
 
@@ -118,14 +120,20 @@ class VastPlugin extends Plugin {
     const options = this.options;
 
     if (options.companion && companionCreative) {
-      const variation = companionCreative.variations.find(v => v.width === String(options.companion.maxWidth) && v.height === String(options.companion.maxHeight));
+      const variation = companionCreative.variations.find(
+        (v) =>
+          v.width === String(options.companion.maxWidth) &&
+          v.height === String(options.companion.maxHeight)
+      );
 
       if (variation) {
         if (variation.staticResource) {
-          if (variation.type.indexOf('image') === 0) {
+          if (variation.type.indexOf("image") === 0) {
             const clickThroughUrl = variation.companionClickThroughURLTemplate;
 
-            const dest = window$.document.getElementById(options.companion.elementId);
+            const dest = window$.document.getElementById(
+              options.companion.elementId
+            );
 
             let html;
 
@@ -135,24 +143,35 @@ class VastPlugin extends Plugin {
               html = `<img src="${variation.staticResource}"/>`;
             }
             dest.innerHTML = html;
-          } else if (['application/x-javascript', 'text/javascript', 'application/javascript'].indexOf(variation.type) > -1) {
+          } else if (
+            [
+              "application/x-javascript",
+              "text/javascript",
+              "application/javascript",
+            ].indexOf(variation.type) > -1
+          ) {
             // handle script
-          } else if (variation.type === 'application/x-shockwave-flash') {
+          } else if (variation.type === "application/x-shockwave-flash") {
             // handle flash
           }
         }
       }
     }
 
-    this.tracker = new VASTTracker(this.vastClient, adWithLinear, linearCreative, companionCreative);
+    this.tracker = new VASTTracker(
+      this.vastClient,
+      adWithLinear,
+      linearCreative,
+      companionCreative
+    );
 
     this.vastCreative = linearCreative;
 
     if (linearCreative.mediaFiles.length) {
-      console.log('Trigger ads ready');
-      this.player.trigger('adsready');
+      console.log("Trigger ads ready");
+      this.player.trigger("adsready");
     } else {
-      this.player.trigger('adscanceled');
+      this.player.trigger("adscanceled");
     }
   }
 
@@ -162,29 +181,28 @@ class VastPlugin extends Plugin {
    * @private
    */
   _getVastContent() {
-    let {url, xml} = this.options;
+    let { url, xml } = this.options;
 
     if (url) {
-      return this.vastClient.get(url, {withCredentials: this.options.withCredentials, wrapperLimit: this.options.wrapperLimit});
-    }
-    else if (xml) {
+      return this.vastClient.get(url, {
+        withCredentials: this.options.withCredentials,
+        wrapperLimit: this.options.wrapperLimit,
+      });
+    } else if (xml) {
       const vastParser = new VASTParser();
 
       let xmlDocument;
       if (xml.constructor === window.XMLDocument) {
         xmlDocument = xml;
-      }
-      else if (xml.constructor === String) {
-        xmlDocument = (new window.DOMParser()).parseFromString(xml, 'text/xml');
-      }
-      else {
-        throw new Error('xml config option must be a String or XMLDocument');
+      } else if (xml.constructor === String) {
+        xmlDocument = new window.DOMParser().parseFromString(xml, "text/xml");
+      } else {
+        throw new Error("xml config option must be a String or XMLDocument");
       }
 
       return vastParser.parseVAST(xmlDocument);
-    }
-    else {
-      return Promise.reject(new Error('url or xml option not set'));
+    } else {
+      return Promise.reject(new Error("url or xml option not set"));
     }
   }
 
@@ -202,7 +220,8 @@ class VastPlugin extends Plugin {
     this.originalPlayerState.controlsEnabled = player.controls();
     player.controls(options.controlsEnabled);
 
-    this.originalPlayerState.seekEnabled = player.controlBar.progressControl.enabled();
+    this.originalPlayerState.seekEnabled =
+      player.controlBar.progressControl.enabled();
     if (options.seekEnabled) {
       player.controlBar.progressControl.enable();
     } else {
@@ -211,9 +230,9 @@ class VastPlugin extends Plugin {
 
     player.src(createSourceObjects(vastCreative.mediaFiles));
 
-    const blocker = window$.document.createElement('div');
+    const blocker = window$.document.createElement("div");
 
-    blocker.className = 'vast-blocker';
+    blocker.className = "vast-blocker";
     blocker.onclick = () => {
       if (player.paused()) {
         player.play();
@@ -222,33 +241,33 @@ class VastPlugin extends Plugin {
       this.tracker.click();
     };
 
-    this.tracker.on('clickthrough', url => {
-      window$.open(url, '_blank');
+    this.tracker.on("clickthrough", (url) => {
+      window$.open(url, "_blank");
     });
 
     this.domElements.blocker = blocker;
     player.el().insertBefore(blocker, player.controlBar.el());
 
-    const skipButton = window$.document.createElement('div');
+    const skipButton = window$.document.createElement("div");
 
-    skipButton.className = 'vast-skip-button';
-    skipButton.style.display = 'none';
+    skipButton.className = "vast-skip-button";
+    skipButton.style.display = "none";
     this.domElements.skipButton = skipButton;
     player.el().appendChild(skipButton);
 
     this.eventListeners.adtimeupdate = () => this._timeUpdate();
-    player.one('adplay', () => {
+    player.one("adplay", () => {
       if (this.options.skip > 0 && player.duration() >= this.options.skip) {
-        skipButton.style.display = 'block';
-        player.on('adtimeupdate', this.eventListeners.adtimeupdate);
+        skipButton.style.display = "block";
+        player.on("adtimeupdate", this.eventListeners.adtimeupdate);
       }
-      this.player.loadingSpinner.el().style.display = 'none';
+      this.player.loadingSpinner.el().style.display = "none";
     });
 
     this.eventListeners.teardown = () => this._tearDown();
 
     skipButton.onclick = (e) => {
-      if ((' ' + skipButton.className + ' ').indexOf(' enabled ') >= 0) {
+      if ((" " + skipButton.className + " ").indexOf(" enabled ") >= 0) {
         this.tracker.skip();
         this.eventListeners.teardown();
       }
@@ -261,7 +280,7 @@ class VastPlugin extends Plugin {
 
     this._setupEvents();
 
-    player.one('adended', this.eventListeners.teardown);
+    player.one("adended", this.eventListeners.teardown);
   }
 
   /**
@@ -272,15 +291,19 @@ class VastPlugin extends Plugin {
   _timeUpdate() {
     const player = this.player;
 
-    player.loadingSpinner.el().style.display = 'none';
+    player.loadingSpinner.el().style.display = "none";
 
     const timeLeft = Math.ceil(this.options.skip - player.currentTime());
 
     if (timeLeft > 0) {
-      this.domElements.skipButton.innerHTML = 'Skip in ' + timeLeft + '...';
-    } else if ((' ' + this.domElements.skipButton.className + ' ').indexOf(' enabled ') === -1) {
-      this.domElements.skipButton.className += ' enabled ';
-      this.domElements.skipButton.innerHTML = 'Skip';
+      this.domElements.skipButton.innerHTML = "Skip in " + timeLeft + "...";
+    } else if (
+      (" " + this.domElements.skipButton.className + " ").indexOf(
+        " enabled "
+      ) === -1
+    ) {
+      this.domElements.skipButton.className += " enabled ";
+      this.domElements.skipButton.innerHTML = "Skip";
     }
   }
 
@@ -290,10 +313,12 @@ class VastPlugin extends Plugin {
    * @private
    */
   _tearDown() {
-    Object.values(this.domElements).forEach(el => el.parentNode.removeChild(el));
+    Object.values(this.domElements).forEach((el) =>
+      el.parentNode.removeChild(el)
+    );
     const player = this.player;
 
-    player.off('adtimeupdate', this.eventListeners.adtimeupdate);
+    player.off("adtimeupdate", this.eventListeners.adtimeupdate);
 
     player.ads.endLinearAdMode();
 
@@ -305,7 +330,7 @@ class VastPlugin extends Plugin {
       player.controlBar.progressControl.disable();
     }
 
-    player.trigger('vast-done');
+    player.trigger("vast-done");
   }
 
   /**
@@ -319,44 +344,44 @@ class VastPlugin extends Plugin {
 
     let errorOccurred = false;
 
-    const canplayFn = function() {
+    const canplayFn = function () {
       tracker.trackImpression();
     };
 
-    const timeupdateFn = function() {
+    const timeupdateFn = function () {
       if (isNaN(tracker.assetDuration)) {
         tracker.assetDuration = player.duration();
       }
       tracker.setProgress(player.currentTime());
     };
 
-    const pauseFn = function() {
+    const pauseFn = function () {
       tracker.setPaused(true);
-      player.one('adplay', function() {
+      player.one("adplay", function () {
         tracker.setPaused(false);
       });
     };
 
-    const errorFn = function() {
-      const MEDIAFILE_PLAYBACK_ERROR = '405';
+    const errorFn = function () {
+      const MEDIAFILE_PLAYBACK_ERROR = "405";
 
       tracker.errorWithCode(MEDIAFILE_PLAYBACK_ERROR);
       errorOccurred = true;
       // Do not want to show VAST related errors to the user
       player.error(null);
-      player.trigger('adended');
+      player.trigger("adended");
     };
 
-    const fullScreenFn = function() {
+    const fullScreenFn = function () {
       // for 'fullscreen' & 'exitfullscreen'
       tracker.setFullscreen(player.isFullscreen());
     };
 
-    const muteFn = (function() {
+    const muteFn = (function () {
       let previousMuted = player.muted();
       let previousVolume = player.volume();
 
-      return function() {
+      return function () {
         const volumeNow = player.volume();
         const mutedNow = player.muted();
 
@@ -375,20 +400,20 @@ class VastPlugin extends Plugin {
       };
     })();
 
-    player.on('adcanplay', canplayFn);
-    player.on('adtimeupdate', timeupdateFn);
-    player.on('adpause', pauseFn);
-    player.on('aderror', errorFn);
-    player.on('advolumechange', muteFn);
-    player.on('fullscreenchange', fullScreenFn);
+    player.on("adcanplay", canplayFn);
+    player.on("adtimeupdate", timeupdateFn);
+    player.on("adpause", pauseFn);
+    player.on("aderror", errorFn);
+    player.on("advolumechange", muteFn);
+    player.on("fullscreenchange", fullScreenFn);
 
-    player.one('vast-done', function() {
-      player.off('adcanplay', canplayFn);
-      player.off('adtimeupdate', timeupdateFn);
-      player.off('adpause', pauseFn);
-      player.off('aderror', errorFn);
-      player.off('advolumechange', muteFn);
-      player.off('fullscreenchange', fullScreenFn);
+    player.one("vast-done", function () {
+      player.off("adcanplay", canplayFn);
+      player.off("adtimeupdate", timeupdateFn);
+      player.off("adpause", pauseFn);
+      player.off("aderror", errorFn);
+      player.off("advolumechange", muteFn);
+      player.off("fullscreenchange", fullScreenFn);
 
       if (!errorOccurred) {
         tracker.complete();
@@ -397,4 +422,4 @@ class VastPlugin extends Plugin {
   }
 }
 
-videojs.registerPlugin('vast', VastPlugin);
+videojs.registerPlugin("vast", VastPlugin);

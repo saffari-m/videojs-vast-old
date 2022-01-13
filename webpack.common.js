@@ -28,7 +28,8 @@ const standalonePluginConfig = Object.assign({}, videoPlayerConfig, {
     "videojs-vast": ["./src/vast-plugin.js", "./src/vast-player.css"],
   },
   externals: {
-    "video.js": "videojs",
+    "video.js": "video.js",
+    "videojs-contrib-ads": "videojs-contrib-ads",
   },
   module: {
     rules: [
