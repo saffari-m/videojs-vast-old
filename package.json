@@ -1,6 +1,6 @@
 {
   "name": "@filmgardi/videojs-vast",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HTML5 video player with VAST support",
   "main": "dist/player.js",
   "vjsstandard": {
