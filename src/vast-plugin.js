@@ -1,6 +1,6 @@
 import videojs from 'video.js'
 import { VASTClient, VASTParser, VASTTracker } from 'vast-client'
-import handleVPAID from 'vpaid-handler'
+import handleVPAID from './vpaid-handler'
 
 const Plugin = videojs.getPlugin('plugin');
 

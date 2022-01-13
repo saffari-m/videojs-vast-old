@@ -1,5 +1,5 @@
 {
-  "name": "videojsx-vast-plugin",
+  "name": "@filmgardi/videojs-vast",
   "version": "1.0.0",
   "description": "HTML5 video player with VAST support",
   "main": "dist/player.js",
@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "webpack --config webpack.prod.js",
+    "copy:fonts": "shx cp -R node_modules/video.js/dist/font ./dist/font",
     "clean": "rm -rf dist",
     "lint": "vjsstandard",
     "start": "webpack-dev-server --config webpack.dev.js",
@@ -26,12 +27,12 @@
   "author": "Philip Watson",
   "repository": {
     "type": "git",
-    "url": "https://github.com/philipwatson/videojsx-vast-plugin"
+    "url": "https://github.com/saffari-m/videojs-vast.git"
   },
   "license": "MIT",
   "dependencies": {
     "vast-client": "^2.0.4",
-    "video.js": "^7.2.3",
+    "video.js": "^6",
     "videojs-contrib-ads": "^6.6.1",
     "vpaid-html5-client": "github:MailOnline/VPAIDHTML5Client#0.1.14"
   },
@@ -49,6 +50,7 @@
     "mustache-express": "^1.3.0",
     "portfinder": "^1.0.20",
     "puppeteer": "^1.14.0",
+    "shx": "^0.3.4",
     "style-loader": "^0.23.0",
     "videojs-standard": "^8.0.4",
     "webpack": "^4.41.5",

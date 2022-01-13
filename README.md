@@ -1,4 +1,4 @@
-# videojsx-vast-plugin
+# @filmgardi/videojs-vast
 
 
 Initially, the code was taken from [videojs-vast-plugin](https://github.com/theonion/videojs-vast-plugin) and made it work with videojs 7.
@@ -17,7 +17,7 @@ The build creates two independent artifacts in the `dist/` folder:
 
 | Artifact Name | Files                              | Description |
 | ------------- | -----------------------------------|-------|
-| Plugin        | videojsx.vast.js, videojsx.vast.css| Standalone plugin that can be integrated to an external video.js player. |
+| Plugin        | videojs-vast.js, videojs-vast.css| Standalone plugin that can be integrated to an external video.js player. |
 | Video Player  | player.js                          | A file that has video.js, css and other dependencies bundled in. |
  
 Also, every JavaScript `.js` file has a compressed version `.js.gz` 
@@ -26,9 +26,9 @@ Also, every JavaScript `.js` file has a compressed version `.js.gz`
 
 ### Setting Up Plugin Scripts
 
-Include this plugin (**videojsx.vast.css** and **videojsx.vast.js**) and its dependencies.
+Include this plugin (**videojs-vast.css** and **videojs-vast.js**) and its dependencies.
 
-Ordering does matter. Be sure you request `video.js` first and `videojs-contrib-ads` anywhere before `videojsx.vast.js`.
+Ordering does matter. Be sure you request `video.js` first and `videojs-contrib-ads` anywhere before `videojs-vast.js`.
 
 It will look something like this:
 
@@ -43,8 +43,8 @@ It will look something like this:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.6.4/videojs.ads.min.js"></script>
 
     <!-- This plugin for video.js -->
-    <link href="http://where-you-host-the-plugin.com/videojsx.vast.css" rel="stylesheet">
-    <script src="http://where-you-host-the-plugin.com/videojsx.vast.js"></script>
+    <link href="http://where-you-host-the-plugin.com/videojs-vast.css" rel="stylesheet">
+    <script src="http://where-you-host-the-plugin.com/videojs-vast.js"></script>
 </head>
 ```
 
